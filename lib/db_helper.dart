@@ -4,6 +4,8 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'modal_page.dart';
+
 class DbHelper{
   /// make this class constructor private
   /// private constructor
@@ -44,21 +46,29 @@ class DbHelper{
     });
   }
 
-  Future<bool> addNote({required String title,required String desc})async{
+  Future<bool> addNote({required noteModel newNote})async{
     Database db = await getDb();
     
-    int rowsEffected = await db.insert(TABLE_NAME, {
-      COLUMN_TITLE: title,
-      COLUMN_DESC: desc,
-      COLUMN_CREATED_AT:DateTime.now().millisecondsSinceEpoch.toString(),
-
-    });
+    int rowsEffected = await db.insert(TABLE_NAME, newNote.toMap());
     return rowsEffected>0;
   }
-  Future<List<Map<String,dynamic>>> fetchAllNotes()async{
+  Future<List<noteModel>> fetchAllNotes()async{
     var db = await getDb();
     List<Map<String,dynamic>> mNotes = await db.query(TABLE_NAME);
-    return mNotes;
+
+    List<noteModel> allNotes = [];
+
+    /// Using for-loop for insert data map to model
+    /*for(int i=0;i< mNotes.length;i++){
+      allNotes.add(noteModel.fromMap(mNotes[i]));
+    }*/
+
+    /// Using for-each loop for insert data map to model
+    for(Map<String,dynamic>eachNote in mNotes){
+      allNotes.add(noteModel.fromMap(eachNote));
+    }
+
+    return allNotes;
   }
   Future<bool> updatesNotes({required int id, required String title, required String desc})async{
     var db = await getDb();
